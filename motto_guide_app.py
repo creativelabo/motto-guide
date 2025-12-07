@@ -156,11 +156,16 @@ SYSTEM_PROMPT = """# あなたの役割
 - 「この言葉と共にどんな未来を創りたいですか？」
 - お祝いの言葉を贈る"""
 
+# APIキーの取得（Streamlit Secrets から）
+try:
+    API_KEY = st.secrets["ANTHROPIC_API_KEY"]
+except Exception as e:
+    st.error("⚠️ APIキーが設定されていません。管理者に連絡してください。")
+    st.stop()
+
 # セッション状態の初期化
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "api_key" not in st.session_state:
-    st.session_state.api_key = ""
 if "started" not in st.session_state:
     st.session_state.started = False
 if "current_step" not in st.session_state:
@@ -190,7 +195,7 @@ def update_step(message):
 def call_claude_api(messages):
     """Claude APIを呼び出す"""
     try:
-        client = anthropic.Anthropic(api_key=st.session_state.api_key)
+        client = anthropic.Anthropic(api_key=API_KEY)
         
         response = client.messages.create(
             model="claude-sonnet-4-5-20250929",
@@ -222,52 +227,36 @@ def start_conversation():
 st.markdown('<h1 class="main-title">座右の銘ガイド</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Hiromi式 - あなただけの座右の銘を、一緒に紡ぎましょう</p>', unsafe_allow_html=True)
 
-# APIキー入力（サイドバー）
+# サイドバー
 with st.sidebar:
-    st.header("⚙️ 設定")
-    api_key_input = st.text_input(
-        "Claude APIキー",
-        type="password",
-        value=st.session_state.api_key,
-        help="APIキーは https://console.anthropic.com/ で取得できます"
-    )
-    
-    if api_key_input:
-        st.session_state.api_key = api_key_input
-    
-    st.markdown("---")
-    st.markdown("### 使い方")
+    st.header("📖 使い方")
     st.markdown("""
-    1. Claude APIキーを入力
-    2. 「対話を始める」をクリック
-    3. AIの質問に答える
-    4. 30分で座右の銘が完成
+    1. 「対話を始める」をクリック
+    2. AIの質問に答える
+    3. 30分で座右の銘が完成
+    
+    **5つのステップ：**
+    1. 問題を見つける
+    2. 解決方法を考える
+    3. 理想の生き方を探る
+    4. 乖離を見つける
+    5. 座右の銘を紡ぐ
     """)
     
     st.markdown("---")
-    if st.button("🔄 最初から始める"):
+    
+    if st.button("🔄 最初から始める", use_container_width=True):
         st.session_state.messages = []
         st.session_state.started = False
         st.session_state.current_step = 0
         st.session_state.is_complete = False
         st.rerun()
+    
+    st.markdown("---")
+    st.markdown("**Hiromi式 - 座右の銘の紡ぎ方**")
 
 # メインエリア
-if not st.session_state.api_key:
-    # APIキー未入力の場合
-    st.info("👈 左のサイドバーからClaude APIキーを入力してください")
-    st.markdown("""
-    ### Claude APIキーの取得方法
-    
-    1. [Anthropic Console](https://console.anthropic.com/) にアクセス
-    2. 「API Keys」→「Create Key」をクリック
-    3. 生成されたキーをコピー
-    4. 左のサイドバーに貼り付け
-    
-    ※初回は$5分の無料クレジットが付与されます
-    """)
-
-elif not st.session_state.started:
+if not st.session_state.started:
     # 開始前
     st.markdown("""
     ### ようこそ！
