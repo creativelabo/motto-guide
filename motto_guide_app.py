@@ -20,12 +20,12 @@ ACCENT_COLOR = "#5a4a3a"    # アクセントカラー（ボタンなど）
 st.markdown(f"""
 <style>
     /* 背景 */
-    .stApp {{
+    .stApp {{{{
         background: linear-gradient(135deg, {BG_COLOR_START} 0%, {BG_COLOR_END} 100%);
-    }}
+    }}}}
     
     /* タイトル */
-    .main-title {
+    .main-title {{{{
         font-family: 'Georgia', serif;
         color: #3a3a3a;
         text-align: center;
@@ -33,26 +33,26 @@ st.markdown(f"""
         font-weight: 300;
         letter-spacing: 0.1em;
         margin-bottom: 0.5rem;
-    }
+    }}}}
     
-    .subtitle {
+    .subtitle {{{{
         text-align: center;
         color: #6b6b6b;
         font-size: 0.9rem;
         margin-bottom: 2rem;
-    }
+    }}}}
     
     /* チャットメッセージ */
-    .stChatMessage {
+    .stChatMessage {{{{
         background-color: white;
         border: 1px solid #d4c4b0;
         border-radius: 10px;
         padding: 1rem;
         margin: 0.5rem 0;
-    }
+    }}}}
     
     /* ボタン */
-    .stButton>button {{
+    .stButton>button {{{{
         background-color: {ACCENT_COLOR};
         color: white;
         border-radius: 5px;
@@ -60,33 +60,33 @@ st.markdown(f"""
         border: none;
         font-weight: 500;
         letter-spacing: 0.05em;
-    }}
+    }}}}
     
-    .stButton>button:hover {{
+    .stButton>button:hover {{{{
         background-color: #6b5a4a;
-    }}
+    }}}}
     
     /* 入力欄 */
-    .stTextInput>div>div>input {
+    .stTextInput>div>div>input {{{{
         background-color: #faf8f5;
         border: 1px solid #d4c4b0;
-    }
+    }}}}
     
     /* プログレスバー */
-    .step-container {
+    .step-container {{{{
         background-color: white;
         border: 1px solid #d4c4b0;
         border-radius: 10px;
         padding: 1.5rem;
         margin: 1rem 0 2rem 0;
-    }
+    }}}}
     
-    .step-label {{
+    .step-label {{{{
         color: {ACCENT_COLOR};
         font-size: 0.85rem;
         font-weight: 500;
         margin-bottom: 0.5rem;
-    }}
+    }}}}
 </style>
 """, unsafe_allow_html=True)
 
