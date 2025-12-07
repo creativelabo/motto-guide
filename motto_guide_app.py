@@ -5,19 +5,24 @@ from datetime import datetime
 
 # ページ設定
 st.set_page_config(
-    page_title="座右の銘ガイド - Hiromi式",
-    page_icon="🎋",
+    page_title="あなたの「座右の銘」一緒に紡ぎましょ",
+    page_icon="✨",  # ここでアイコン変更可能（絵文字またはURL）
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
 # カスタムCSS（日本的ミニマリズム）
-st.markdown("""
+# 背景色の設定（ここで変更可能）
+BG_COLOR_START = "#f5f1e8"  # 背景グラデーション開始色
+BG_COLOR_END = "#e8dcc8"    # 背景グラデーション終了色
+ACCENT_COLOR = "#5a4a3a"    # アクセントカラー（ボタンなど）
+
+st.markdown(f"""
 <style>
     /* 背景 */
-    .stApp {
-        background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc8 100%);
-    }
+    .stApp {{
+        background: linear-gradient(135deg, {BG_COLOR_START} 0%, {BG_COLOR_END} 100%);
+    }}
     
     /* タイトル */
     .main-title {
@@ -47,19 +52,19 @@ st.markdown("""
     }
     
     /* ボタン */
-    .stButton>button {
-        background-color: #5a4a3a;
+    .stButton>button {{
+        background-color: {ACCENT_COLOR};
         color: white;
         border-radius: 5px;
         padding: 0.5rem 2rem;
         border: none;
         font-weight: 500;
         letter-spacing: 0.05em;
-    }
+    }}
     
-    .stButton>button:hover {
+    .stButton>button:hover {{
         background-color: #6b5a4a;
-    }
+    }}
     
     /* 入力欄 */
     .stTextInput>div>div>input {
@@ -76,12 +81,12 @@ st.markdown("""
         margin: 1rem 0 2rem 0;
     }
     
-    .step-label {
-        color: #5a4a3a;
+    .step-label {{
+        color: {ACCENT_COLOR};
         font-size: 0.85rem;
         font-weight: 500;
         margin-bottom: 0.5rem;
-    }
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -163,6 +168,10 @@ except Exception as e:
     st.error("⚠️ APIキーが設定されていません。管理者に連絡してください。")
     st.stop()
 
+# アプリの設定（ここで変更可能）
+APP_TITLE = "あなたの「座右の銘」一緒に紡ぎましょ"
+APP_SUBTITLE = "あなただけの言葉で、人生の羅針盤を創ります"
+
 # セッション状態の初期化
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -214,18 +223,14 @@ def start_conversation():
     st.session_state.started = True
     st.session_state.current_step = 1
     
-    # 初回メッセージ
-    initial_message = {"role": "user", "content": "座右の銘を紡ぎたいです"}
-    st.session_state.messages.append(initial_message)
-    
-    # Claude の応答
-    assistant_response = call_claude_api([initial_message])
+    # 直接AIの挨拶から開始（ユーザーメッセージは不要）
+    assistant_response = call_claude_api([{"role": "user", "content": "対話を開始してください"}])
     st.session_state.messages.append({"role": "assistant", "content": assistant_response})
     update_step(assistant_response)
 
 # メインUI
-st.markdown('<h1 class="main-title">座右の銘ガイド</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Hiromi式 - あなただけの座右の銘を、一緒に紡ぎましょう</p>', unsafe_allow_html=True)
+st.markdown(f'<h1 class="main-title">{APP_TITLE}</h1>', unsafe_allow_html=True)
+st.markdown(f'<p class="subtitle">{APP_SUBTITLE}</p>', unsafe_allow_html=True)
 
 # サイドバー
 with st.sidebar:
@@ -244,6 +249,49 @@ with st.sidebar:
     """)
     
     st.markdown("---")
+    
+    # 保存・再開機能
+    if st.session_state.started and not st.session_state.is_complete:
+        st.markdown("**💾 対話の保存・再開**")
+        
+        # 保存ボタン
+        if st.session_state.messages:
+            import json
+            from datetime import datetime
+            
+            save_data = {
+                "messages": st.session_state.messages,
+                "current_step": st.session_state.current_step,
+                "saved_at": datetime.now().isoformat()
+            }
+            
+            json_str = json.dumps(save_data, ensure_ascii=False, indent=2)
+            
+            st.download_button(
+                label="💾 対話を保存",
+                data=json_str,
+                file_name=f"motto_guide_save_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                mime="application/json",
+                use_container_width=True
+            )
+        
+        # 再開ボタン
+        uploaded_file = st.file_uploader(
+            "📂 保存した対話を再開",
+            type=['json'],
+            help="以前保存した対話ファイルをアップロード"
+        )
+        
+        if uploaded_file is not None:
+            import json
+            save_data = json.loads(uploaded_file.read())
+            st.session_state.messages = save_data["messages"]
+            st.session_state.current_step = save_data["current_step"]
+            st.session_state.started = True
+            st.success("✅ 対話を再開しました！")
+            st.rerun()
+        
+        st.markdown("---")
     
     if st.button("🔄 最初から始める", use_container_width=True):
         st.session_state.messages = []
@@ -296,8 +344,8 @@ else:
         st.success("🎉 座右の銘が完成しました！おめでとうございます！")
         st.balloons()
     
-    # 入力欄（完成していない場合のみ）
-    if not st.session_state.is_complete:
+    # 入力欄（対話開始後かつ完成していない場合のみ）
+    if st.session_state.started and not st.session_state.is_complete:
         if prompt := st.chat_input("メッセージを入力..."):
             # ユーザーメッセージを追加
             st.session_state.messages.append({"role": "user", "content": prompt})
